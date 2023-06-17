@@ -46,7 +46,7 @@ accepted_rel = ["all", "syn", "self_loop"]        # TO be set: wordnet relation 
                                                   # if accepted_rel = ["all"], all relations included in wordnet settings will be used
                                                   # "syn": synonymy    "@":hypernymy    "~":hyponymy      "!": antonymy
                                                   #  ["~", "@", "!"]      "self_loop": to assign 1.1 for [i,i] position in the matrix
-to_keep = "60000" #"12590" # "20154"   #13437                                # This number specifies how many of the extracted words are kept
+to_keep = "1000" #"60000" #"12590" # "20154"   #13437                                # This number specifies how many of the extracted words are kept
                                                   #  if to_keep = all, all the words are kept
 vec_dim = 850                                     # TO be set: Dimension of the final vectors
 
@@ -88,12 +88,12 @@ just_test = False                                 # To be set: if true, only Gen
 embedding_file_name = ("auto","abc")              # The input file to Gensim. "auto" to use the last created embeddig file for the test or the file name
 #embedding_file_name = ("embeddings_infinite", "txt")
 
-main_path = os.getcwd() + "/data/output/"
+main_path = os.path.join(os.getcwd(), "data/output/")
 #-----------------------------------------------------------------------------------------------------------------------
 
 if not just_test:
     path = main_path
-    log_file = path + "en_1_log.txt"
+    log_file = os.path.join(path, "en_1_log.txt")   
     log = open(log_file, "w")
 
     file_names = {"n":"data.noun","v":"data.verb","a":"data.adj","r":"data.adv"}

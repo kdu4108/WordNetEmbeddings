@@ -52,7 +52,7 @@ from scipy.sparse import coo_matrix
 from scipy.sparse.linalg import inv as inv_sparse
 from numpy.linalg import inv as inv_dense
 
-from sklearn.utils.testing import assert_array_almost_equal
+from sklearn.utils._testing import assert_array_almost_equal
 from sklearn import random_projection
 
 import sklearn.preprocessing as preprocessing

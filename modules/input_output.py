@@ -43,13 +43,13 @@ from progressbar import ProgressBar, Percentage, Bar
 def data_file_reader(file_name, lang):
     print("    Working on " + file_name)
     if lang == "Dutch":
-        path = os.getcwd() + '/data/input/Dutch_wnet/'
+        path = os.path.join(os.getcwd(),'data/input/Dutch_wnet/')
     elif lang == "Portuguese":
-        path = os.getcwd() + '/data/input/Portuguese_wnet/'
+        path = os.path.join(os.getcwd(),'data/input/Portuguese_wnet/')
     else:
-        path = os.getcwd() + '/data/input/English_wnet/'
+        path = os.path.join(os.getcwd(),'data/input/English_wnet/')
 
-    fl = open(path + file_name)
+    fl = open(os.path.join(path, file_name))
     src = fl.readlines()
     fl.close()
 
@@ -117,7 +117,7 @@ def emb_writer(emb_matrix, word_list, dim, iter, feature_name, for_WSD, main_pat
             print("no changes was made to the previously saved file")
         else:
 
-            out_file = open(main_path + "embeddings_" + iter + ".txt", "w")
+            out_file = open(os.path.join(main_path, "embeddings_" + iter + ".txt"), "w")
 
             out_file.write("%d %d\n" % (len(word_list), dim))
 
