@@ -54,7 +54,7 @@ To provide input files to the software the following structure must exist:
 Where *language* is the language that you are using that must be indicated in main.py in the variable **lang**.
 If the language isn't supported by the current path routing in the code, which was mainly use for experiments, you may add the path to the directory in the files *input_output.py*, *vector_generator.py* and *vector_accuracy_checker.py*.
 
-Various variables for the output of the model, such as embedding dimension, can be found in *main.py*. 
+Various variables for the output of the model, such as embedding dimension, can be found in *main.py*.
 
 To run the software, you will need the following packages:
 

@@ -1,6 +1,3 @@
-# coding=utf-8
-#! /usr/bin/env python3.4
-
 """
 MIT License
 
@@ -36,18 +33,20 @@ data_file_reader(file_name):
 Chakaveh.saedi@di.fc.ul.pt
 """
 
-import os, sys
+import os
+import sys
 import numpy as np
 from progressbar import ProgressBar, Percentage, Bar
+
 
 def data_file_reader(file_name, lang):
     print("    Working on " + file_name)
     if lang == "Dutch":
-        path = os.path.join(os.getcwd(),'data/input/Dutch_wnet/')
+        path = os.path.join(os.getcwd(), "data/input/Dutch_wnet/")
     elif lang == "Portuguese":
-        path = os.path.join(os.getcwd(),'data/input/Portuguese_wnet/')
+        path = os.path.join(os.getcwd(), "data/input/Portuguese_wnet/")
     else:
-        path = os.path.join(os.getcwd(),'data/input/English_wnet/')
+        path = os.path.join(os.getcwd(), "data/input/English_wnet/")
 
     fl = open(os.path.join(path, file_name))
     src = fl.readlines()
@@ -61,7 +60,7 @@ def data_file_reader(file_name, lang):
 
     for lineNum in range(len(src)):
         dataLine = src[lineNum]
-        if dataLine[0:2] == "  ": #or " 000 " in dataLine:    # comments or synset with no relations
+        if dataLine[0:2] == "  ":  # or " 000 " in dataLine:    # comments or synset with no relations
             continue
         else:
             synsetWrds = []
@@ -97,19 +96,20 @@ def data_file_reader(file_name, lang):
                 indx += 1
 
             gloss = dataLine.split("|")[1]
-            gloss = gloss.replace("\n","")
-            gloss = gloss.replace("'","''")
+            gloss = gloss.replace("\n", "")
+            gloss = gloss.replace("'", "''")
 
             data = (synsetWrds, synsetConnections, synsetRelationTypes, connectedSynsetPos, gloss)
-            file_data.update({dataLineParts[0]:data})
+            file_data.update({dataLineParts[0]: data})
             offset_list.append(dataLineParts[0])
 
-            #if dataLineParts[0] in synsetConnections:
+            # if dataLineParts[0] in synsetConnections:
             #    print("    self loop", dataLineParts[0])
 
-    #print("number of extracted words: ", len(all_word), ", ", len(amb_word), "of which are ambiguous")
+    # print("number of extracted words: ", len(all_word), ", ", len(amb_word), "of which are ambiguous")
 
     return file_data, offset_list
+
 
 def emb_writer(emb_matrix, word_list, dim, iter, feature_name, for_WSD, main_path):
     try:
@@ -142,7 +142,9 @@ def emb_writer(emb_matrix, word_list, dim, iter, feature_name, for_WSD, main_pat
                     wrd = word_list[i].split("\t")[0]
                     i += 1
                     emb = row.asDict()
-                    out_file.write(wrd + " " + str(emb[feature_name]).replace("[","").replace("]","").replace(","," ") + "\n")
+                    out_file.write(
+                        wrd + " " + str(emb[feature_name]).replace("[", "").replace("]", "").replace(",", " ") + "\n"
+                    )
 
             out_file.close()
             print("\n-------------------------------------------------------------")
@@ -151,9 +153,10 @@ def emb_writer(emb_matrix, word_list, dim, iter, feature_name, for_WSD, main_pat
         exc_type, exc_value, exc_traceback = sys.exc_info()
         print("Unexpected error:", exc_value)
 
+
 def array_writer(matrix, fname, type, main_path):
     try:
-        print ("    Saving %s data into a file"%(fname))
+        print("    Saving %s data into a file" % (fname))
         path = main_path + fname
         if type == "txt":
             np.savetxt(path, matrix)
@@ -162,16 +165,18 @@ def array_writer(matrix, fname, type, main_path):
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         print("Unexpected error:", exc_value)
-        print("        COULDN'T SAVE THE %s FILE"%(fname))
+        print("        COULDN'T SAVE THE %s FILE" % (fname))
+
 
 def array_loader(fname, main_path):
     path = main_path + fname + ".npy"
     mat_data = np.load(path)
-    return(mat_data)
+    return mat_data
 
-def info_writer(dim,wrd_cnt, non_zero, for_WSD, main_path):
-    path = main_path + 'last_run_info'
-    info = open(path,"w")
+
+def info_writer(dim, wrd_cnt, non_zero, for_WSD, main_path):
+    path = main_path + "last_run_info"
+    info = open(path, "w")
     info.write("dim: %d\n" % (dim[0]))
     info.write("for_WSD: %s\n" % (str(for_WSD)))
     info.write("wrd_cnt: %d\n" % (wrd_cnt))
@@ -179,31 +184,33 @@ def info_writer(dim,wrd_cnt, non_zero, for_WSD, main_path):
 
     info.close()
 
+
 def info_reader(main_path):
-    path = main_path+'last_run_info'
+    path = main_path + "last_run_info"
     info = open(path)
     data = info.readlines()
     info.close()
 
-    dim = data[0].split(" ")[1].replace("\n","")
-    for_WSD = data[1].split(" ")[1].replace("\n","")
+    dim = data[0].split(" ")[1].replace("\n", "")
+    for_WSD = data[1].split(" ")[1].replace("\n", "")
     if for_WSD == "True":
         for_WSD = True
     else:
         for_WSD = False
-    wrd_cnt = data[2].split(" ")[1].replace("\n","")
-    non_zero = data[3].split(" ")[1].replace("\n","")
+    wrd_cnt = data[2].split(" ")[1].replace("\n", "")
+    non_zero = data[3].split(" ")[1].replace("\n", "")
 
-    return dim, for_WSD,  wrd_cnt,non_zero
+    return dim, for_WSD, wrd_cnt, non_zero
+
 
 def log_writer(log, description, only_one_word, only_once, equal_weight, for_WSD, accepted_rel, iter, vec_dim):
     try:
-        log.write("Only one word from each synset: %s \n" %(only_one_word))
-        log.write("Only one sense of each word: %s\n" %(only_once))
-        log.write("Equal weight for different relation types: %s\n" %(str(equal_weight)))
-        log.write("Different vectors for each sense of ambiguous words: %s \n" %(str(for_WSD)))
-        log.write("Accepted relations: %s \n" %(str(accepted_rel)))
-        log.write("Random walk method (infinite or itterative): %s \n" %(iter))
+        log.write("Only one word from each synset: %s \n" % (only_one_word))
+        log.write("Only one sense of each word: %s\n" % (only_once))
+        log.write("Equal weight for different relation types: %s\n" % (str(equal_weight)))
+        log.write("Different vectors for each sense of ambiguous words: %s \n" % (str(for_WSD)))
+        log.write("Accepted relations: %s \n" % (str(accepted_rel)))
+        log.write("Random walk method (infinite or itterative): %s \n" % (iter))
         log.write("Vector dimension: %d\n" % (vec_dim))
 
         if description != "":

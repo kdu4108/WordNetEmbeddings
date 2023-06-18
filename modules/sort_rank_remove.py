@@ -1,7 +1,6 @@
 import numpy as np
 import string
 
-
 """
 MIT License
 
@@ -31,9 +30,9 @@ def sort_rem(emb_matrix, word_list, to_keep):
 
     if to_keep >= len(emb_matrix):
         print("    No row/column was eliminated")
-        new_word_list= word_list
+        new_word_list = word_list
     else:
-        words_to_keep = set(['a','b','c'])
+        words_to_keep = set(["a", "b", "c"])
         zero_index = [np.where(x == 0)[0] for x in emb_matrix]
         zero_cnt = [len(x) for x in zero_index]
         indx = np.array(zero_cnt).argsort()[::-1]
@@ -62,7 +61,8 @@ def sort_rem(emb_matrix, word_list, to_keep):
 
     return emb_matrix, new_word_list
 
-emb_matrix = np.random.random_integers(-2,5,(8,8))
+
+emb_matrix = np.random.random_integers(-2, 5, (8, 8))
 emb_matrix[emb_matrix < 0] = 0
 word_list = list(string.ascii_lowercase)
 word_list = np.array(word_list[:8])
