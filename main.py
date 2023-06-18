@@ -34,7 +34,7 @@ import time
 from time import gmtime, strftime
 
 # -------------------------------------------variables TO SET
-lang = "English"  # TO be set: Dutch / English / Portuguese
+lang = "English"
 only_one_word = False  # TO be set: True if only one word is chosen from each synset
 only_once = False  # TO be set: True if only one sense of ambiguous words are considered
 equal_weight = True  # TO be set: True if all relations receive same weight                         Not Done Yet
@@ -68,6 +68,8 @@ elif lang == "Portuguese":
     eval_sets = ["LX-SimLex-999.txt", "LX-WordSim-353.txt"]
 else:
     eval_sets = ["simlex999.txt", "RG1965.tsv", "wordsim353.tsv"]
+
+eval_sets = [f"preprocessed-{filename}" for filename in eval_sets]
 # ref_model = ["MEN_dataset"]
 # Models used by Gensim for accuracy checking
 
@@ -82,19 +84,18 @@ iter = "infinite"  # If approach is 1 ---> "infinite" if  all arcs are needed
 depth = 5  # if approach is 2 : [a digit] showing how deep to go down in the graph traverse
 
 co_occurance_graph_based = False
-just_test = False  # To be set: if true, only Gensim is called and previously created embedings are used for test
+just_test = True  # To be set: if true, only Gensim is called and previously created embedings are used for test
 embedding_file_name = (
     "auto",
     "abc",
 )  # The input file to Gensim. "auto" to use the last created embeddig file for the test or the file name
 # embedding_file_name = ("embeddings_infinite", "txt")
 
-main_path = os.path.join(os.getcwd(), "data/output/")
+output_path = os.path.join(os.getcwd(), f"data/output/{lang}")
 # -----------------------------------------------------------------------------------------------------------------------
 
 if not just_test:
-    path = main_path
-    log_file = os.path.join(path, "en_1_log.txt")
+    log_file = os.path.join(output_path, "en_1_log.txt")
     log = open(log_file, "w")
 
     file_names = {"n": "data.noun", "v": "data.verb", "a": "data.adj", "r": "data.adv"}
@@ -132,17 +133,17 @@ if not just_test:
                 accepted_rel,
                 to_keep,
                 log,
-                main_path,
+                output_path,
                 lang,
                 eval_sets,
             )
-            array_writer(word_list, "word_list", "bin", main_path)
-            array_writer(synonym_index, "synonym_index", "bin", main_path)
-            array_writer(p_matrix, "p_matrix", "bin", main_path)
+            array_writer(word_list, "word_list", "bin", output_path)
+            array_writer(synonym_index, "synonym_index", "bin", output_path)
+            array_writer(p_matrix, "p_matrix", "bin", output_path)
             if to_keep == "all":
-                info_writer(dim, len(word_set), non_zero, for_WSD, main_path)
+                info_writer(dim, len(word_set), non_zero, for_WSD, output_path)
             else:
-                info_writer(dim, int(to_keep), non_zero, for_WSD, main_path)
+                info_writer(dim, int(to_keep), non_zero, for_WSD, output_path)
             wrd_cnt = len(word_set)
         else:
             p_matrix = array_loader("pMatrix", os.getcwd() + "/data/input/ngram/")
@@ -152,16 +153,16 @@ if not just_test:
             non_zero = -10
     else:
         p_matrix = []
-        word_list = array_loader("word_list", main_path)
-        dim, for_WSD, wrd_cnt, non_zero = info_reader(main_path)
+        word_list = array_loader("word_list", output_path)
+        dim, for_WSD, wrd_cnt, non_zero = info_reader(output_path)
         dim = (int(dim), int(dim))
         wrd_cnt = int(wrd_cnt)
         non_zero = int(non_zero)
-        synonym_index = array_loader("synonym_index", main_path)
+        synonym_index = array_loader("synonym_index", output_path)
 
     if approach == 1:
         # random walk -> PMI -> normalization
-        emb_matrix = random_walk(p_matrix, dim, iter, log, from_file, stage, non_zero, main_path)
+        emb_matrix = random_walk(p_matrix, dim, iter, log, from_file, stage, non_zero, output_path)
 
         # dimensionality reduction
         final_vec, feature_name, word_list = dimensionality_reduction(
@@ -175,11 +176,11 @@ if not just_test:
             norm,
             log,
             saved_model,
-            main_path,
+            output_path,
         )
 
         # writing the results into a file
-        emb_writer(final_vec, word_list, vec_dim, iter, feature_name, for_WSD, main_path)
+        emb_writer(final_vec, word_list, vec_dim, iter, feature_name, for_WSD, output_path)
 
         finish_time = time.time()
         print("\nRequired time to process %d words: %.3f seconds ---" % (wrd_cnt, finish_time - start_time))
@@ -192,7 +193,7 @@ if not just_test:
     elif approach == 2:
         # random walk
         emb_matrix = matrix_arc_update(
-            p_matrix, synonym_index, accepted_rel, dim, depth, log, from_file, stage, main_path
+            p_matrix, synonym_index, accepted_rel, dim, depth, log, from_file, stage, output_path
         )
 
         # dimensionality reduction
@@ -207,12 +208,12 @@ if not just_test:
             norm,
             log,
             saved_model,
-            main_path,
+            output_path,
         )
 
         # writing the results into a file
         f_name = "depth_" + str(depth)
-        emb_writer(final_vec, word_list, vec_dim, f_name, feature_name, for_WSD, main_path)
+        emb_writer(final_vec, word_list, vec_dim, f_name, feature_name, for_WSD, output_path)
 
         finish_time = time.time()
         print("\nRequired time to process %d words: %.3f seconds ---" % (wrd_cnt, finish_time - start_time))
@@ -225,4 +226,4 @@ if not just_test:
 
 
 # Checking the accuracy using Gensim
-vector_accuracy(eval_sets, iter, approach, depth, for_WSD, embedding_file_name, main_path, lang)
+vector_accuracy(eval_sets, iter, approach, depth, for_WSD, embedding_file_name, output_path, lang)

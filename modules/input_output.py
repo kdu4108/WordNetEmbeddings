@@ -41,13 +41,7 @@ from progressbar import ProgressBar, Percentage, Bar
 
 def data_file_reader(file_name, lang):
     print("    Working on " + file_name)
-    if lang == "Dutch":
-        path = os.path.join(os.getcwd(), "data/input/Dutch_wnet/")
-    elif lang == "Portuguese":
-        path = os.path.join(os.getcwd(), "data/input/Portuguese_wnet/")
-    else:
-        path = os.path.join(os.getcwd(), "data/input/English_wnet/")
-
+    path = os.path.join(os.getcwd(), f"data/input/{lang}_wnet/")
     fl = open(os.path.join(path, file_name))
     src = fl.readlines()
     fl.close()

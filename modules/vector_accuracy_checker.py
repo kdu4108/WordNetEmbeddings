@@ -39,14 +39,14 @@ import gensim
 from modules.input_output import *
 
 
-def vector_accuracy(ref_model, iter, approach, depth, for_WSD, name, main_path, lang):
+def vector_accuracy(eval_sets, iter, approach, depth, for_WSD, name, main_path, lang):
     if for_WSD:
         # there are more than one vector for each ambiguous words
         print("Code is not Complete YET")
     else:
         print("\n* Checking accuracy")
 
-        log_file = main_path + "accuracy_results"
+        log_file = os.path.join(main_path, "accuracy_results")
 
         # set logging definitions
         # logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
@@ -61,12 +61,12 @@ def vector_accuracy(ref_model, iter, approach, depth, for_WSD, name, main_path, 
 
         if name[0] == "auto":
             if approach == 1:
-                testset = main_path + "embeddings_" + iter + ".txt"
+                testset = os.path.join(main_path, f"embeddings_{iter}.txt")
             else:
-                testset = main_path + "embeddings_depth_" + str(depth) + ".txt"
+                testset = os.path.join(main_path, f"embeddings_depth_{depth}.txt")
         else:
             if name[1] == "txt":
-                testset = main_path + name[0] + ".txt"
+                testset = os.path.join(main_path, f"{name[0]}.txt")
 
             elif name[1] == "npy":  # This Condition DOES NOT WORK
                 matrix = array_loader(name[0])
@@ -91,21 +91,22 @@ def vector_accuracy(ref_model, iter, approach, depth, for_WSD, name, main_path, 
 
             else:
                 testset = main_path + name[0] + "." + name[1]
+                print(f"WARNING: Not sure if this filepath for testset is expected or valid. Path is: {testset}")
 
         # to build the model based on the created embeddings and then compare it to the reference
         # load and evaluate
         # model = model = gensim.models.KeyedVectors.load_word2vec_format(os.getcwd() + '/data/input/GoogleNews-vectors-negative300.bin' , binary=True)
         # model = gensim.models.Word2Vec.load_word2vec_format(testset, binary=False)
         model = gensim.models.KeyedVectors.load_word2vec_format(testset, binary=False)
-        for ref in ref_model:
+        for ref in eval_sets:
             print("ref: %s-----------------------------" % ref)
             # ref = "/opt/gensim/gensim/test/test_data/" + ref
             if lang == "English":
-                ref = os.getcwd() + "/data/input/English_testset/" + ref
+                ref = os.path.join(os.getcwd(), "data/input/English_testset/", ref)
             elif lang == "Portuguese":
-                ref = os.getcwd() + "/data/input/Portuguese_testset/" + ref
+                ref = os.path.join(os.getcwd(), "data/input/Portuguese_testset/", ref)
             else:
-                ref = os.getcwd() + "/data/input/Dutch_testset/" + ref
+                ref = os.path.join(os.getcwd(), "data/input/Dutch_testset/", ref)
             if "questions-words" in ref:
                 model.accuracy(ref, restrict_vocab=None)
             else:
