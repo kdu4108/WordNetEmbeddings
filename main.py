@@ -65,11 +65,12 @@ reduction_method = "PCA"                        # The methode for dimensionality
 saved_model = False                               #  True if neural network is used for dimensinality reduction and a saved model is used
 
 if lang == "English":
-    ref_model = ["wordsim_rel.txt", "wordsim_sim.txt", "simlex999.txt", "MEN_dataset", "MTURK-771.csv", "RG1965.tsv"]
+    # eval_sets = ["wordsim_rel.txt", "wordsim_sim.txt", "simlex999.txt", "MEN_dataset", "MTURK-771.csv", "RG1965.tsv"]
+    eval_sets = ["SimLex-999.txt"]
 elif lang == "Portuguese":
-    ref_model = ["LX-SimLex-999.txt", "LX-WordSim-353.txt"]
+    eval_sets = ["LX-SimLex-999.txt", "LX-WordSim-353.txt"]
 else:
-    ref_model = ["simlex999.txt", "RG1965.tsv", "wordsim353.tsv"]
+    eval_sets = ["simlex999.txt", "RG1965.tsv", "wordsim353.tsv"]
 #ref_model = ["MEN_dataset"]
                                                   # Models used by Gensim for accuracy checking
 
@@ -120,7 +121,7 @@ if not just_test:
             word_set, synset_wrd = word_extractor(all_pos, all_data, only_one_word, only_once, log)
 
             # to create the relation matrix
-            p_matrix, dim, word_list, non_zero, synonym_index = pMatrix_builder(all_data, all_pos, word_set, synset_wrd, equal_weight, approach, for_WSD, accepted_rel, to_keep, log, main_path, lang)
+            p_matrix, dim, word_list, non_zero, synonym_index = pMatrix_builder(all_data, all_pos, word_set, synset_wrd, equal_weight, approach, for_WSD, accepted_rel, to_keep, log, main_path, lang, eval_sets)
             array_writer(word_list, "word_list", "bin", main_path)
             array_writer(synonym_index, "synonym_index", "bin", main_path)
             array_writer(p_matrix, "p_matrix", "bin", main_path)
@@ -179,5 +180,5 @@ if not just_test:
 
 
 # Checking the accuracy using Gensim
-vector_accuracy(ref_model, iter, approach, depth, for_WSD, embedding_file_name, main_path, lang)
+vector_accuracy(eval_sets, iter, approach, depth, for_WSD, embedding_file_name, main_path, lang)
 

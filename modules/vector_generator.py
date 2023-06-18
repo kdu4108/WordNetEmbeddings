@@ -112,7 +112,7 @@ def word_extractor(all_pos, all_data, only_one_word, only_once, log):
 
     return sorted(word_set), synset_wrd
 
-def pMatrix_builder(all_data, all_pos, word_set, synset_wrd, equal_weight, approach, for_WSD, accepted_rel, to_keep, log, main_path, lang):
+def pMatrix_builder(all_data, all_pos, word_set, synset_wrd, equal_weight, approach, for_WSD, accepted_rel, to_keep, log, main_path, lang, eval_sets):
     start_time = time.time()
     print("\n* Creating the relation matrix")
     log.write("\n* Creating the relation matrix")
@@ -255,7 +255,7 @@ def pMatrix_builder(all_data, all_pos, word_set, synset_wrd, equal_weight, appro
         for itm in temp:
             word_list.append(itm[0])
         if to_keep != "all":
-            p_matrix, word_list, synonym_index = sort_rem(p_matrix, word_list, synonym_index, int(to_keep), lang)
+            p_matrix, word_list, synonym_index = sort_rem(p_matrix, word_list, synonym_index, int(to_keep), lang, eval_sets)
             dim = (len(word_list), len(word_list))
         print("************Number of words are %d after the cut"%(len(word_list)))
         return p_matrix, dim, word_list, non_zero, np.array(list(synonym_index))
@@ -640,14 +640,14 @@ def dimensionality_reduction(word_list, to_keep, reduction_method, emb_matrix, v
     array_writer(emb_vec, "embeddings_matrix", "bin", main_path)
     return emb_vec, "pcaFeatures", word_list
 
-def sort_rem(matrix, word_list, synonym_index, to_keep, lang):
+def sort_rem(matrix, word_list, synonym_index, to_keep, lang, eval_sets):
     if to_keep >= len(matrix):
         print("    No row/column was eliminated")
         new_word_list= word_list
         new_synonym_index = synonym_index
     else:
         print("    removing some of the rows/columns")
-        words_to_keep = gensim_wrd_extractor(lang)                          # to keep the words that appear in the test_file
+        words_to_keep = gensim_wrd_extractor(lang, eval_sets)                          # to keep the words that appear in the test_file
         
         zero_index = [np.where(x == 0)[0] for x in matrix]
         zero_cnt = [len(x) for x in zero_index]
@@ -712,20 +712,12 @@ def sort_rem(matrix, word_list, synonym_index, to_keep, lang):
 
     return matrix.astype(np.float32), new_word_list, new_synonym_index
 
-def gensim_wrd_extractor(lang):
+def gensim_wrd_extractor(lang, eval_sets):
     words_to_keep = set()
-    if lang == "English":
-        file_name = ["RG1965.tsv", "wordsim_sim.txt", "wordsim353.tsv", "MTURK-771.csv", "simlex999.txt"]
-        src_path = os.getcwd() + '/data/input/English_testset/'
-    elif lang == "Portuguese":
-        file_name = ["LX-SimLex-999.txt", "LX-WordSim-353.txt"]
-        src_path = os.getcwd() + '/data/input/Portuguese_testset/'
-    else:
-        file_name = ["RG1965.tsv", "wordsim353.tsv"]
-        src_path = os.getcwd() + '/data/input/Dutch_testset/'
+    src_path = os.path.join(os.getcwd(), f"data/input/{lang}_testset/")
 
-    for fn in file_name:
-        path =  src_path + fn
+    for fn in eval_sets:
+        path = os.path.join(src_path, fn)
         fl = open(path)
         src = fl.readlines()
         fl.close()
