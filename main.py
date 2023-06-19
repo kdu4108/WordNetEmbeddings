@@ -44,7 +44,8 @@ LANG_TO_EVAL_SETS = {
 
 
 @plac.pos("LANG", "Language of the wordnet", choices=list(LANG_TO_EVAL_SETS.keys()), type=str)
-def main(LANG: str):
+@plac.pos("TO_KEEP", "Number of words to keep", type=str, abbrev="K")
+def main(LANG: str, TO_KEEP: str = "1000"):
     # -------------------------------------------variables TO SET
     only_one_word = False  # TO be set: True if only one word is chosen from each synset
     only_once = False  # TO be set: True if only one sense of ambiguous words are considered
@@ -54,7 +55,7 @@ def main(LANG: str):
     # if accepted_rel = ["all"], all relations included in wordnet settings will be used
     # "syn": synonymy    "@":hypernymy    "~":hyponymy      "!": antonymy
     #  ["~", "@", "!"]      "self_loop": to assign 1.1 for [i,i] position in the matrix
-    to_keep = "1000"  # "60000" #"12590" # "20154"   #13437                                # This number specifies how many of the extracted words are kept
+    TO_KEEP = "1000"  # "60000" #"12590" # "20154"   #13437                                # This number specifies how many of the extracted words are kept
     #  if to_keep = all, all the words are kept
     vec_dim = 850  # TO be set: Dimension of the final vectors
 
@@ -135,7 +136,7 @@ def main(LANG: str):
                     approach,
                     for_WSD,
                     accepted_rel,
-                    to_keep,
+                    TO_KEEP,
                     log,
                     output_path,
                     LANG,
@@ -144,10 +145,10 @@ def main(LANG: str):
                 array_writer(word_list, "word_list", "bin", output_path)
                 array_writer(synonym_index, "synonym_index", "bin", output_path)
                 array_writer(p_matrix, "p_matrix", "bin", output_path)
-                if to_keep == "all":
+                if TO_KEEP == "all":
                     info_writer(dim, len(word_set), non_zero, for_WSD, output_path)
                 else:
-                    info_writer(dim, int(to_keep), non_zero, for_WSD, output_path)
+                    info_writer(dim, int(TO_KEEP), non_zero, for_WSD, output_path)
                 wrd_cnt = len(word_set)
             else:
                 p_matrix = array_loader("pMatrix", os.getcwd() + "/data/input/ngram/")
@@ -171,7 +172,7 @@ def main(LANG: str):
             # dimensionality reduction
             final_vec, feature_name, word_list = dimensionality_reduction(
                 word_list,
-                to_keep,
+                TO_KEEP,
                 reduction_method,
                 emb_matrix,
                 vec_dim,
@@ -203,7 +204,7 @@ def main(LANG: str):
             # dimensionality reduction
             final_vec, feature_name, word_list = dimensionality_reduction(
                 word_list,
-                to_keep,
+                TO_KEEP,
                 reduction_method,
                 emb_matrix,
                 vec_dim,
