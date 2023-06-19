@@ -44,7 +44,7 @@ LANG_TO_EVAL_SETS = {
 
 
 @plac.pos("LANG", "Language of the wordnet", choices=list(LANG_TO_EVAL_SETS.keys()), type=str)
-@plac.pos("TO_KEEP", "Number of words to keep", type=str, abbrev="K")
+@plac.opt("TO_KEEP", "Number of words to keep", type=str, abbrev="K")
 def main(LANG: str, TO_KEEP: str = "1000"):
     # -------------------------------------------variables TO SET
     only_one_word = False  # TO be set: True if only one word is chosen from each synset
