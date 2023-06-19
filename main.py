@@ -55,7 +55,6 @@ def main(LANG: str, TO_KEEP: str = "1000"):
     # if accepted_rel = ["all"], all relations included in wordnet settings will be used
     # "syn": synonymy    "@":hypernymy    "~":hyponymy      "!": antonymy
     #  ["~", "@", "!"]      "self_loop": to assign 1.1 for [i,i] position in the matrix
-    TO_KEEP = "1000"  # "60000" #"12590" # "20154"   #13437                                # This number specifies how many of the extracted words are kept
     #  if to_keep = all, all the words are kept
     vec_dim = 850  # TO be set: Dimension of the final vectors
 
@@ -95,7 +94,7 @@ def main(LANG: str, TO_KEEP: str = "1000"):
     )  # The input file to Gensim. "auto" to use the last created embeddig file for the test or the file name
     # embedding_file_name = ("embeddings_infinite", "txt")
 
-    output_path = os.path.join(os.getcwd(), f"data/output/{LANG}")
+    output_path = os.path.join(os.getcwd(), f"data/output/{LANG}/keep_{TO_KEEP}")
     os.makedirs(output_path, exist_ok=True)
     # -----------------------------------------------------------------------------------------------------------------------
 
