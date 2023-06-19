@@ -100,13 +100,7 @@ def vector_accuracy(eval_sets, iter, approach, depth, for_WSD, name, main_path, 
         model = gensim.models.KeyedVectors.load_word2vec_format(testset, binary=False)
         for ref in eval_sets:
             print("ref: %s-----------------------------" % ref)
-            # ref = "/opt/gensim/gensim/test/test_data/" + ref
-            if lang == "English":
-                ref = os.path.join(os.getcwd(), "data/input/English_testset/", ref)
-            elif lang == "Portuguese":
-                ref = os.path.join(os.getcwd(), "data/input/Portuguese_testset/", ref)
-            else:
-                ref = os.path.join(os.getcwd(), "data/input/Dutch_testset/", ref)
+            ref = os.path.join(os.getcwd(), f"data/input/{lang}_testset/", ref)
             if "questions-words" in ref:
                 model.accuracy(ref, restrict_vocab=None)
             else:
