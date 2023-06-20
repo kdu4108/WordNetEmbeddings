@@ -33,13 +33,12 @@ import os
 import sys
 import gc
 import math
+import pandas as pd
 import random
 import time
 import json
 
 from progressbar import ProgressBar, Percentage, Bar
-
-from modules.input_output import *
 
 import numpy as np
 from scipy.sparse import lil_matrix
@@ -64,6 +63,9 @@ from keras.models import Sequential, Model
 from keras.layers import Input, Dense, Activation
 from keras import regularizers
 from keras.optimizers import RMSprop
+
+from modules.input_output import *
+from modules.utils import normalize_words
 
 # -----------------------------
 
@@ -288,6 +290,7 @@ def pMatrix_builder(
         temp = sorted(word_indx.items(), key=lambda x: x[1])
         for itm in temp:
             word_list.append(itm[0])
+        word_list = normalize_words(word_list, lang)
         if to_keep != "all":
             p_matrix, word_list, synonym_index = sort_rem(
                 p_matrix, word_list, synonym_index, int(to_keep), lang, eval_sets
@@ -724,8 +727,8 @@ def sort_rem(matrix, word_list, synonym_index, to_keep, lang, eval_sets):
         print("    removing some of the rows/columns")
         words_to_keep = gensim_wrd_extractor(lang, eval_sets)  # to keep the words that appear in the test_file
 
-        zero_index = [np.where(x == 0)[0] for x in matrix]
-        zero_cnt = [len(x) for x in zero_index]
+        # Sort so you keep the words with the densest connections?
+        zero_cnt = [len(np.where(x == 0)[0]) for x in matrix]
         indx = np.array(zero_cnt)[::-1].argsort()
 
         indx = list(indx)
@@ -755,6 +758,14 @@ def sort_rem(matrix, word_list, synonym_index, to_keep, lang, eval_sets):
         to_del = len(indx)
         #-----------------------------------------------
         """
+        # Log the wordnet words and eval set words to csv for each language.
+        pd.DataFrame(word_list).to_csv(f"data/output/{lang}/wn_words.csv", index=False)
+        pd.DataFrame(words_to_keep).to_csv(f"data/output/{lang}/eval_words.csv", index=False)
+        print(
+            "Overlap size between wordnet words and eval set words:",
+            len(set(word_list).intersection(set(words_to_keep))),
+        )
+
         matrix = np.delete(matrix, indx[:to_del], axis=0)
         matrix = np.delete(matrix, indx[:to_del], axis=1)
 

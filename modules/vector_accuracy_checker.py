@@ -87,10 +87,10 @@ def vector_accuracy(eval_sets, iter, approach, depth, for_WSD, name, main_path, 
                     f_name.write(line)
                 f_name.close()
 
-                testset = main_path + name[0]
+                testset = os.path.join(main_path, name[0])
 
             else:
-                testset = main_path + name[0] + "." + name[1]
+                testset = os.path.join(main_path, name[0] + "." + name[1])
                 print(f"WARNING: Not sure if this filepath for testset is expected or valid. Path is: {testset}")
 
         # to build the model based on the created embeddings and then compare it to the reference
