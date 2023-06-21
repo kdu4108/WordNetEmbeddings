@@ -25,7 +25,6 @@ def warn_if_no_normalization_fct(lang: str):
 
 
 def normalize_words(word_list: List[str], lang: str) -> List[str]:
-    """Normalize a a list of words for given language according to LANG_TO_NORMALIZE_FCT. For example, this is useful for standardizing away diacritics in Hebrew and Arabic."""
     warn_if_no_normalization_fct(lang)
 
     # Need to remove duplicates because sometimes normalizing a word results in an existing word.
@@ -33,8 +32,33 @@ def normalize_words(word_list: List[str], lang: str) -> List[str]:
 
 
 def normalize_word(word: str, lang: str) -> List[str]:
-    """Normalize a word for given language according to LANG_TO_NORMALIZE_FCT. For example, this is useful for standardizing away diacritics in Hebrew and Arabic."""
     warn_if_no_normalization_fct(lang)
 
     # Need to remove duplicates because sometimes normalizing a word results in an existing word.
     return LANG_TO_NORMALIZE_FCT[lang](word)
+
+
+def normalize_eval_set_word_pairs(df, lang):
+    """
+    Given a df with columns ["word1", "word2", "similarity"], normalize all words in cols `word1` and `word2` according to lang and average similarity of rows that consequently contain duplicate pairs.
+    """
+    df["word1"] = df["word1"].apply(lambda s: normalize_word(s, lang))
+    df["word2"] = df["word2"].apply(lambda s: normalize_word(s, lang))
+    agg_df = df.groupby(["word1", "word2"]).agg(["mean", "max", "min"]).reset_index()
+
+    # Sanity check that aggregated word pairs from normalization don't differ too much in similarity judgment
+    agg_df["percent_range_diff"] = (agg_df["similarity"]["max"] - agg_df["similarity"]["min"]) / max(df["similarity"])
+    print(
+        "The following word pairs have a differing max and min similarity rating:",
+        agg_df[agg_df["percent_range_diff"] != 0].sort_values(by="percent_range_diff", ascending=False),
+    )
+
+    agg_df.columns = agg_df.columns.map("".join)
+    out_df = agg_df[["word1", "word2", "similaritymean"]]
+    out_df.rename(
+        columns={
+            "similaritymean": "similarity",
+        },
+        inplace=True,
+    )
+    return out_df

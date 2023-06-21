@@ -122,8 +122,8 @@ def main(LANG: str, TO_KEEP: str = "1000"):
                     # Note: all_data["n"][0]["3"][2]  ---->  In data.noun file, the synset with offset = 3, fetch the second field
                     # Note: all_data["n"][1]["3"]     ---->  In offset list related to the data.noun file, fetch the third entry
 
-                # to extract all the requiered information from the data files
-                word_set, synset_wrd = word_extractor(all_pos, all_data, only_one_word, only_once, log)
+                # to extract all the required information from the data files
+                word_set, synset_wrd = word_extractor(all_pos, all_data, only_one_word, only_once, LANG, log)
 
                 # to create the relation matrix
                 p_matrix, dim, word_list, non_zero, synonym_index = pMatrix_builder(

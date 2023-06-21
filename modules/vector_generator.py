@@ -65,12 +65,12 @@ from keras import regularizers
 from keras.optimizers import RMSprop
 
 from modules.input_output import *
-from modules.utils import normalize_words
+from modules.utils import normalize_word
 
 # -----------------------------
 
 
-def word_extractor(all_pos, all_data, only_one_word, only_once, log):
+def word_extractor(all_pos, all_data, only_one_word, only_once, lang, log):
     # NOTE: all_data = [key:synsetWrds(list), synsetConnections(list), synsetRelationTypes(list), connectedSynsetPos(list), gloss],offset_list
     start_time = time.time()
     word_set = set()  # Note: w1offset(w1)'\t'offset(w1)'\t'pos(w1)
@@ -84,7 +84,8 @@ def word_extractor(all_pos, all_data, only_one_word, only_once, log):
             new_wrd = False
             indx = 0
             while not new_wrd and indx < this_syn_wrd_cnt:
-                this_syn_wrd = all_data[pos][0][offset][0][indx]
+                # Enforce that the words in the wordnet are all normalized
+                this_syn_wrd = normalize_word(all_data[pos][0][offset][0][indx], lang=lang)
                 if this_syn_wrd not in words_wrdcnt.keys():
                     words_wrdcnt.update({this_syn_wrd: 1})
                 else:
@@ -168,8 +169,15 @@ def pMatrix_builder(
             word_indx.update({parts[0]: w_indx})
             w_indx += 1
         else:
-            if word_list[i].split("_offset")[0] not in word_indx.keys():
-                word_indx.update({word_list[i].split("_offset")[0]: w_indx})
+            word = word_list[i].split("_offset")[0]
+            normalized_word = normalize_word(word, lang=lang)
+            if normalized_word != word:
+                raise ValueError(
+                    f"Expected all words in word_list to be normalized, but normalize_word({word}) results in {normalized_word} which differs from {word}."
+                )
+
+            if word not in word_indx.keys():
+                word_indx.update({word: w_indx})
                 w_indx += 1
 
     dim = (len(word_indx), len(word_indx))
@@ -290,7 +298,6 @@ def pMatrix_builder(
         temp = sorted(word_indx.items(), key=lambda x: x[1])
         for itm in temp:
             word_list.append(itm[0])
-        word_list = normalize_words(word_list, lang)
         if to_keep != "all":
             p_matrix, word_list, synonym_index = sort_rem(
                 p_matrix, word_list, synonym_index, int(to_keep), lang, eval_sets

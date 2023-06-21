@@ -2,8 +2,10 @@ import os
 import pandas as pd
 from typing import List
 
+from utils import normalize_eval_set_word_pairs
 
-def preprocess_multilingual_simlex(path):
+
+def preprocess_multilingual_simlex(path, lang):
     """
     Preprocess a language within the Multilingual Simlex dataset (https://direct.mit.edu/coli/article/46/4/847/97326/Multi-SimLex-A-Large-Scale-Evaluation-of) and produce a file which fits the schema (word1, word2, similarity).
     Args:
@@ -31,6 +33,8 @@ def preprocess_multilingual_simlex(path):
         },
         inplace=True,
     )
+
+    out_df = normalize_eval_set_word_pairs(out_df, lang=lang)
     out_df.to_csv(output_path, sep="\t", index=False)
 
 
@@ -43,4 +47,4 @@ lang_to_abbrev = {
     "Spanish": "SPA",
 }
 for lang, abbrev in lang_to_abbrev.items():
-    preprocess_multilingual_simlex(f"../data/input/{lang}_testset/{abbrev}-SimLex.csv")
+    preprocess_multilingual_simlex(f"../data/input/{lang}_testset/{abbrev}-SimLex.csv", lang)
