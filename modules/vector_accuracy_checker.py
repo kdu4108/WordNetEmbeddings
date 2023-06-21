@@ -71,7 +71,7 @@ def vector_accuracy(eval_sets, iter, approach, depth, for_WSD, name, main_path, 
             elif name[1] == "npy":  # This Condition DOES NOT WORK
                 matrix = array_loader(name[0])
                 array_writer(matrix, name[0], "txt")
-                testset = main_path + name[0]
+                testset = os.path.join(main_path, name[0])
                 f_name = open(testset)
                 src = f_name.readlines()
                 f_name.close()

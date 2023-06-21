@@ -49,9 +49,6 @@ def data_file_reader(file_name, lang):
     file_data = {}
     offset_list = []
 
-    all_word = set()
-    amb_word = set()
-
     for lineNum in range(len(src)):
         dataLine = src[lineNum]
         if dataLine[0:2] == "  ":  # or " 000 " in dataLine:    # comments or synset with no relations
@@ -142,8 +139,8 @@ def emb_writer(emb_matrix, word_list, dim, iter, feature_name, for_WSD, main_pat
 
             out_file.close()
             print("\n-------------------------------------------------------------")
-            print("Vector Embeddings are created and saved in \data\output folder")
-    except:
+            print("Vector Embeddings are created and saved in data/output folder")
+    except:  # noqa
         exc_type, exc_value, exc_traceback = sys.exc_info()
         print("Unexpected error:", exc_value)
 
@@ -151,25 +148,25 @@ def emb_writer(emb_matrix, word_list, dim, iter, feature_name, for_WSD, main_pat
 def array_writer(matrix, fname, type, main_path):
     try:
         print("    Saving %s data into a file" % (fname))
-        path = main_path + fname
+        path = os.path.join(main_path, fname)
         if type == "txt":
             np.savetxt(path, matrix)
         else:
             np.save(path, matrix)
-    except:
+    except:  # noqa
         exc_type, exc_value, exc_traceback = sys.exc_info()
         print("Unexpected error:", exc_value)
         print("        COULDN'T SAVE THE %s FILE" % (fname))
 
 
 def array_loader(fname, main_path):
-    path = main_path + fname + ".npy"
+    path = os.path.join(main_path, f"{fname}.npy")
     mat_data = np.load(path)
     return mat_data
 
 
 def info_writer(dim, wrd_cnt, non_zero, for_WSD, main_path):
-    path = main_path + "last_run_info"
+    path = os.path.join(main_path, "last_run_info")
     info = open(path, "w")
     info.write("dim: %d\n" % (dim[0]))
     info.write("for_WSD: %s\n" % (str(for_WSD)))
@@ -180,7 +177,7 @@ def info_writer(dim, wrd_cnt, non_zero, for_WSD, main_path):
 
 
 def info_reader(main_path):
-    path = main_path + "last_run_info"
+    path = os.path.join(main_path, "last_run_info")
     info = open(path)
     data = info.readlines()
     info.close()
@@ -211,5 +208,5 @@ def log_writer(log, description, only_one_word, only_once, equal_weight, for_WSD
             log.write("Description: %s\n" % (description))
 
         log.write("\n-----------------------------\n")
-    except:
+    except:  # noqa
         print("        COULDN'T UPDATE THE LOG FILE")
