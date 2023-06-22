@@ -1,6 +1,7 @@
 from typing import Dict, List
 import wn
 import urllib3
+import random
 
 excluded_ids = ["cili"]
 ids = sorted(set([f"{p['id']}:{p['version']}" for p in wn.projects() if p["id"] not in excluded_ids]))
@@ -18,7 +19,7 @@ for wn_id in ids:
         wnet = wn.Wordnet(lexicon=wn_id)
         for f_name, f in fcts.items():
             synsets = wnet.synsets()
-            synsets.shuffle()
+            random.shuffle(synsets)
             synsets = synsets[:10000]
             for synset in synsets:
                 if f(synset):
