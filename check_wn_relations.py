@@ -2,7 +2,7 @@ from typing import Dict, List
 import wn
 import urllib3
 
-ids = set([f"{p['id']}:{p['version']}" for p in wn.projects()])
+ids = sorted(set([f"{p['id']}:{p['version']}" for p in wn.projects()]))
 lang_to_relations: Dict[str, List[str]] = {id: [] for id in ids}
 for wn_id in ids:
     try:
@@ -15,6 +15,7 @@ for wn_id in ids:
             "holonyms": (lambda x: x.holonyms()),
         }
         for f_name, f in fcts.items():
+            synsets = wnet.synsets()[:10000]
             for synset in wnet.synsets():
                 if f(synset):
                     lang_to_relations[wn_id].append(f_name)
