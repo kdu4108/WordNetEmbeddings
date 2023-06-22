@@ -22,6 +22,7 @@ for wn_id in ids:
                 if f(synset):
                     lang_to_relations[wn_id].append(f_name)
                     break
+        print("Wordnet lang to relations", lang_to_relations)
     except (ConnectionError, urllib3.exceptions.ReadTimeoutError, TimeoutError) as e:
         print(f"Unable to download wordnet {wn_id}.")
         lang_to_relations[wn_id].append(f"UNABLE TO DOWNLOAD because of error {e}.")
