@@ -7,7 +7,7 @@ lang_to_relations: Dict[str, List[str]] = {id: [] for id in ids}
 for wn_id in ids:
     try:
         wn.download(wn_id)
-        wnet = wn.Wordnet(lexicon=id)
+        wnet = wn.Wordnet(lexicon=wn_id)
         fcts = {
             "hypernyms": (lambda x: x.hypernyms()),
             "hyponyms": (lambda x: x.hyponyms()),
