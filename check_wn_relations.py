@@ -2,7 +2,9 @@ from typing import Dict, List
 import wn
 import urllib3
 
-ids = sorted(set([f"{p['id']}:{p['version']}" for p in wn.projects()]))
+excluded_ids = ["cili"]
+ids = sorted(set([f"{p['id']}:{p['version']}" for p in wn.projects() if p["id"] not in excluded_ids]))
+
 lang_to_relations: Dict[str, List[str]] = {id: [] for id in ids}
 for wn_id in ids:
     try:
