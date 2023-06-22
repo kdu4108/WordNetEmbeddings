@@ -1,5 +1,5 @@
 #!/bin/bash
 
-OUTFILE=submit_$1_$2.out
-EFILE=submit_$1_$2.e
-sbatch --account=es_sachan --ntasks=16 --time=8:00:00 --mem-per-cpu=64G --tmp=64G -o $OUTFILE -e $EFILE --wrap "./submit.sh $1 $2"
+OUTFILE=submit_$1_$2_$3.out
+EFILE=submit_$1_$2_$3.e
+sbatch --account=es_sachan --ntasks=16 --time=8:00:00 --mem-per-cpu=64G --tmp=64G -o $OUTFILE -e $EFILE --wrap "./submit.sh $1 $2 $3"

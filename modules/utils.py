@@ -12,6 +12,7 @@ LANG_TO_NORMALIZE_FCT: Dict[str, Callable[[str], str]] = {
     "Spanish": (lambda s: s),
     "German": (lambda s: s),
     "Polish": (lambda s: s),
+    "Portuguese": (lambda s: s),
     "Arabic": araby.strip_diacritics,
     "Hebrew": remove_niqqud_from_string,
 }

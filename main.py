@@ -40,12 +40,14 @@ LANG_TO_EVAL_SETS = {
     "Hebrew": ["HEB-SimLex.csv"],
     "Polish": ["POL-SimLex.csv"],
     "Spanish": ["SPA-SimLex.csv"],
+    "Portuguese": ["LX-SimLex-999.txt"],
 }
 
 
 @plac.pos("LANG", "Language of the wordnet", choices=list(LANG_TO_EVAL_SETS.keys()), type=str)
 @plac.opt("TO_KEEP", "Number of words to keep", type=str, abbrev="K")
-def main(LANG: str, TO_KEEP: str = "1000"):
+@plac.opt("VEC_DIM", "Embedding size of wordnet embeddings", type=int, abbrev="V")
+def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
     # -------------------------------------------variables TO SET
     only_one_word = False  # TO be set: True if only one word is chosen from each synset
     only_once = False  # TO be set: True if only one sense of ambiguous words are considered
@@ -56,7 +58,6 @@ def main(LANG: str, TO_KEEP: str = "1000"):
     # "syn": synonymy    "@":hypernymy    "~":hyponymy      "!": antonymy
     #  ["~", "@", "!"]      "self_loop": to assign 1.1 for [i,i] position in the matrix
     #  if to_keep = all, all the words are kept
-    vec_dim = 850  # TO be set: Dimension of the final vectors
 
     from_file = False  # TO be set: if True it uses the previously built np matrix saved in a file
     #            otherwise the process begins from scratch
@@ -94,7 +95,7 @@ def main(LANG: str, TO_KEEP: str = "1000"):
     )  # The input file to Gensim. "auto" to use the last created embeddig file for the test or the file name
     # embedding_file_name = ("embeddings_infinite", "txt")
 
-    output_path = os.path.join(os.getcwd(), f"data/output/{LANG}/keep_{TO_KEEP}")
+    output_path = os.path.join(os.getcwd(), f"data/output/{LANG}/keep_{TO_KEEP}/vdim_{VEC_DIM}")
     os.makedirs(output_path, exist_ok=True)
     # -----------------------------------------------------------------------------------------------------------------------
 
@@ -108,7 +109,7 @@ def main(LANG: str, TO_KEEP: str = "1000"):
         emb_matrix = []
         word_list = []
 
-        log_writer(log, extra_desc, only_one_word, only_once, equal_weight, for_WSD, accepted_rel, iter, vec_dim)
+        log_writer(log, extra_desc, only_one_word, only_once, equal_weight, for_WSD, accepted_rel, iter, VEC_DIM)
 
         start_time = time.time()
         log.write("Started at " + str(strftime("%Y-%m-%d %H:%M:%S", gmtime())) + "\n")
@@ -174,7 +175,7 @@ def main(LANG: str, TO_KEEP: str = "1000"):
                 TO_KEEP,
                 reduction_method,
                 emb_matrix,
-                vec_dim,
+                VEC_DIM,
                 from_file,
                 normalization,
                 norm,
@@ -184,7 +185,7 @@ def main(LANG: str, TO_KEEP: str = "1000"):
             )
 
             # writing the results into a file
-            emb_writer(final_vec, word_list, vec_dim, iter, feature_name, for_WSD, output_path)
+            emb_writer(final_vec, word_list, VEC_DIM, iter, feature_name, for_WSD, output_path)
 
             finish_time = time.time()
             print("\nRequired time to process %d words: %.3f seconds ---" % (wrd_cnt, finish_time - start_time))
@@ -206,7 +207,7 @@ def main(LANG: str, TO_KEEP: str = "1000"):
                 TO_KEEP,
                 reduction_method,
                 emb_matrix,
-                vec_dim,
+                VEC_DIM,
                 from_file,
                 normalization,
                 norm,
@@ -217,7 +218,7 @@ def main(LANG: str, TO_KEEP: str = "1000"):
 
             # writing the results into a file
             f_name = "depth_" + str(depth)
-            emb_writer(final_vec, word_list, vec_dim, f_name, feature_name, for_WSD, output_path)
+            emb_writer(final_vec, word_list, VEC_DIM, f_name, feature_name, for_WSD, output_path)
 
             finish_time = time.time()
             print("\nRequired time to process %d words: %.3f seconds ---" % (wrd_cnt, finish_time - start_time))
