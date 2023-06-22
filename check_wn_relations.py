@@ -4,27 +4,27 @@ import urllib3
 
 excluded_ids = ["cili"]
 ids = sorted(set([f"{p['id']}:{p['version']}" for p in wn.projects() if p["id"] not in excluded_ids]))
-
-lang_to_relations: Dict[str, List[str]] = {id: [] for id in ids}
+fcts = {
+    "hypernyms": (lambda x: x.hypernyms()),
+    "hyponyms": (lambda x: x.hyponyms()),
+    "meronyms": (lambda x: x.meronyms()),
+    "holonyms": (lambda x: x.holonyms()),
+}
+lang_to_relations: Dict[str, List[str]] = {id: {k: [] for k in fcts.keys()} for id in ids}
+lang_to_relation_count: Dict[str, List[str]] = {id: {k: 0 for k in fcts.keys()} for id in ids}
 for wn_id in ids:
     try:
         wn.download(wn_id)
         wnet = wn.Wordnet(lexicon=wn_id)
-        fcts = {
-            "hypernyms": (lambda x: x.hypernyms()),
-            "hyponyms": (lambda x: x.hyponyms()),
-            "meronyms": (lambda x: x.meronyms()),
-            "holonyms": (lambda x: x.holonyms()),
-        }
         for f_name, f in fcts.items():
-            synsets = wnet.synsets()[:10000]
             for synset in wnet.synsets():
                 if f(synset):
-                    lang_to_relations[wn_id].append(f_name)
-                    break
-        print("Wordnet lang to relations", lang_to_relations, "\n\n")
-    except (ConnectionError, urllib3.exceptions.ReadTimeoutError, TimeoutError, wn.Error) as e:
+                    lang_to_relations[wn_id][f_name].append(synset)
+                    lang_to_relation_count[wn_id][f_name] += 1
+                    # print(synset)
+    except (ConnectionError, urllib3.exceptions.ReadTimeoutError, TimeoutError, wn.Error):
         print(f"Unable to download wordnet {wn_id}.")
-        lang_to_relations[wn_id].append(f"UNABLE TO DOWNLOAD because of error {e}.")
+        lang_to_relations[wn_id] = "UNABLE TO DOWNLOAD"
 
-print(lang_to_relations)
+# print(lang_to_relations)
+print(lang_to_relation_count)
