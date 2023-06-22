@@ -17,7 +17,10 @@ for wn_id in ids:
         wn.download(wn_id)
         wnet = wn.Wordnet(lexicon=wn_id)
         for f_name, f in fcts.items():
-            for synset in wnet.synsets():
+            synsets = wnet.synsets()
+            synsets.shuffle()
+            synsets = synsets[:10000]
+            for synset in synsets:
                 if f(synset):
                     lang_to_relations[wn_id][f_name].append(synset)
                     lang_to_relation_count[wn_id][f_name] += 1
