@@ -232,7 +232,7 @@ def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850, JUST_TEST=False, TEST_W2
     # Checking the accuracy using Gensim
     eval_set_paths = [os.path.join(os.getcwd(), f"data/input/{LANG}_testset/", ref) for ref in eval_sets]
     if TEST_W2V:
-        emb_path = os.path.join(output_dir, "w2v_no_adj_embeddings.bin")
+        emb_path = os.path.join(output_dir, "w2v_no_adj_embeddings_kv.bin")
     else:
         emb_path = (
             os.path.join(output_dir, f"embeddings_{iter}.txt")

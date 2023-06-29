@@ -54,7 +54,16 @@ def vector_accuracy(eval_set_paths: List[str], emb_path: str, output_dir: str, l
     # to build the model based on the created embeddings and then compare it to the reference
     # load and evaluate
     _, file_extension = os.path.splitext(emb_path)
-    model = gensim.models.KeyedVectors.load_word2vec_format(emb_path, binary=(file_extension == ".bin"))
+    try:
+        model = gensim.models.KeyedVectors.load_word2vec_format(emb_path, binary=(file_extension == ".bin"))
+    except UnicodeDecodeError:
+        print(
+            f"UnicodeDecodeError from trying to load {emb_path} using KeyedVectors.load_word2vec_format. Now trying to load full model."
+        )
+        from gensim.models import Word2Vec
+
+        new_emb_path = os.path.join(os.path.dirname(emb_path), "w2v_no_adj_embeddings.bin")
+        model = Word2Vec.load(new_emb_path).wv
     for eval_set_path in eval_set_paths:
         print("eval_set_path: %s-----------------------------" % eval_set_path)
         if "questions-words" in eval_set_path:
