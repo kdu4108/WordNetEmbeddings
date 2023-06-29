@@ -35,73 +35,29 @@ https://radimrehurek.com/gensim/models/keyedvectors.html
 import os
 import logging
 import gensim
+from typing import List, Union
 
 from modules.input_output import *
 
 
-def vector_accuracy(eval_sets, iter, approach, depth, for_WSD, name, main_path, lang):
-    if for_WSD:
-        # there are more than one vector for each ambiguous words
-        print("Code is not Complete YET")
-    else:
-        print("\n* Checking accuracy")
+def vector_accuracy(eval_set_paths: List[str], emb_path: str, output_dir: str, lang: str):
+    print("\n* Checking accuracy")
+    log_file = os.path.join(output_dir, "accuracy_results")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", filename=log_file, filemode="w"
+    )
+    console = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(message)s")
+    console.setFormatter(formatter)
+    logging.getLogger("").addHandler(console)
 
-        log_file = os.path.join(main_path, "accuracy_results")
-
-        # set logging definitions
-        # logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
-        logging.basicConfig(
-            level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", filename=log_file, filemode="w"
-        )
-        console = logging.StreamHandler()
-        formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(message)s")
-        console.setFormatter(formatter)
-        logging.getLogger("").addHandler(console)
-
-        if name[0] == "auto":
-            if approach == 1:
-                testset = os.path.join(main_path, f"embeddings_{iter}.txt")
-            else:
-                testset = os.path.join(main_path, f"embeddings_depth_{depth}.txt")
+    # to build the model based on the created embeddings and then compare it to the reference
+    # load and evaluate
+    _, file_extension = os.path.splitext(emb_path)
+    model = gensim.models.KeyedVectors.load_word2vec_format(emb_path, binary=(file_extension == ".bin"))
+    for eval_set_path in eval_set_paths:
+        print("eval_set_path: %s-----------------------------" % eval_set_path)
+        if "questions-words" in eval_set_path:
+            model.accuracy(eval_set_path, restrict_vocab=None)
         else:
-            if name[1] == "txt":
-                testset = os.path.join(main_path, f"{name[0]}.txt")
-
-            elif name[1] == "npy":  # This Condition DOES NOT WORK
-                matrix = array_loader(name[0])
-                array_writer(matrix, name[0], "txt")
-                testset = os.path.join(main_path, name[0])
-                f_name = open(testset)
-                src = f_name.readlines()
-                f_name.close()
-
-                f_name = open(testset, "w")
-                f_name.write("%d %d\n" % (matrix.shape[0], matrix.shape[1]))
-                for line in src:
-                    line = (
-                        line.replace("0.000000000000000000e+00", "0.0")
-                        .replace("1.000000000000000000e+00", "1.0")
-                        .replace("2.000000000000000000e+00", "2.0")
-                    )
-                    f_name.write(line)
-                f_name.close()
-
-                testset = os.path.join(main_path, name[0])
-
-            else:
-                testset = os.path.join(main_path, name[0] + "." + name[1])
-                print(f"WARNING: Not sure if this filepath for testset is expected or valid. Path is: {testset}")
-
-        # to build the model based on the created embeddings and then compare it to the reference
-        # load and evaluate
-        # model = model = gensim.models.KeyedVectors.load_word2vec_format(os.getcwd() + '/data/input/GoogleNews-vectors-negative300.bin' , binary=True)
-        # model = gensim.models.Word2Vec.load_word2vec_format(testset, binary=False)
-        model = gensim.models.KeyedVectors.load_word2vec_format(testset, binary=False)
-        for ref in eval_sets:
-            print("ref: %s-----------------------------" % ref)
-            ref = os.path.join(os.getcwd(), f"data/input/{lang}_testset/", ref)
-            if "questions-words" in ref:
-                model.accuracy(ref, restrict_vocab=None)
-            else:
-                model.evaluate_word_pairs(ref)
+            model.evaluate_word_pairs(eval_set_path)

@@ -47,7 +47,11 @@ LANG_TO_EVAL_SETS = {
 @plac.pos("LANG", "Language of the wordnet", choices=list(LANG_TO_EVAL_SETS.keys()), type=str)
 @plac.opt("TO_KEEP", "Number of words to keep", type=str, abbrev="K")
 @plac.opt("VEC_DIM", "Embedding size of wordnet embeddings", type=int, abbrev="V")
-def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
+@plac.flg("JUST_TEST", "Whether to only test using previously trained embeddings", abbrev="T")
+@plac.flg("TEST_W2V", "Whether to only test using word2vec", abbrev="WV")
+def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850, JUST_TEST=False, TEST_W2V=False):
+    if not JUST_TEST and TEST_W2V:
+        raise ValueError("TEST_W2V can only be True when we are running in JUST_TEST=True mode.")
     # -------------------------------------------variables TO SET
     only_one_word = False  # TO be set: True if only one word is chosen from each synset
     only_once = False  # TO be set: True if only one sense of ambiguous words are considered
@@ -88,19 +92,15 @@ def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
     depth = 5  # if approach is 2 : [a digit] showing how deep to go down in the graph traverse
 
     co_occurance_graph_based = False
-    just_test = False  # To be set: if true, only Gensim is called and previously created embedings are used for test
-    embedding_file_name = (
-        "auto",
-        "abc",
-    )  # The input file to Gensim. "auto" to use the last created embeddig file for the test or the file name
-    # embedding_file_name = ("embeddings_infinite", "txt")
 
-    output_path = os.path.join(os.getcwd(), f"data/output/{LANG}/keep_{TO_KEEP}/vdim_{VEC_DIM}")
-    os.makedirs(output_path, exist_ok=True)
+    output_dir = os.path.join(
+        os.getcwd(), f"data/output/{LANG}", f"keep_{TO_KEEP}/vdim_{VEC_DIM}" if not TEST_W2V else "w2v"
+    )
+    os.makedirs(output_dir, exist_ok=True)
     # -----------------------------------------------------------------------------------------------------------------------
 
-    if not just_test:
-        log_file = os.path.join(output_path, "en_1_log.txt")
+    if not JUST_TEST:
+        log_file = os.path.join(output_dir, "en_1_log.txt")
         log = open(log_file, "w")
 
         file_names = {"n": "data.noun", "v": "data.verb", "a": "data.adj", "r": "data.adv"}
@@ -138,17 +138,17 @@ def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
                     accepted_rel,
                     TO_KEEP,
                     log,
-                    output_path,
+                    output_dir,
                     LANG,
                     eval_sets,
                 )
-                array_writer(word_list, "word_list", "bin", output_path)
-                array_writer(synonym_index, "synonym_index", "bin", output_path)
-                array_writer(p_matrix, "p_matrix", "bin", output_path)
+                array_writer(word_list, "word_list", "bin", output_dir)
+                array_writer(synonym_index, "synonym_index", "bin", output_dir)
+                array_writer(p_matrix, "p_matrix", "bin", output_dir)
                 if TO_KEEP == "all":
-                    info_writer(dim, len(word_set), non_zero, for_WSD, output_path)
+                    info_writer(dim, len(word_set), non_zero, for_WSD, output_dir)
                 else:
-                    info_writer(dim, int(TO_KEEP), non_zero, for_WSD, output_path)
+                    info_writer(dim, int(TO_KEEP), non_zero, for_WSD, output_dir)
                 wrd_cnt = len(word_set)
             else:
                 p_matrix = array_loader("pMatrix", os.getcwd() + "/data/input/ngram/")
@@ -158,16 +158,16 @@ def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
                 non_zero = -10
         else:
             p_matrix = []
-            word_list = array_loader("word_list", output_path)
-            dim, for_WSD, wrd_cnt, non_zero = info_reader(output_path)
+            word_list = array_loader("word_list", output_dir)
+            dim, for_WSD, wrd_cnt, non_zero = info_reader(output_dir)
             dim = (int(dim), int(dim))
             wrd_cnt = int(wrd_cnt)
             non_zero = int(non_zero)
-            synonym_index = array_loader("synonym_index", output_path)
+            synonym_index = array_loader("synonym_index", output_dir)
 
         if approach == 1:
             # random walk -> PMI -> normalization
-            emb_matrix = random_walk(p_matrix, dim, iter, log, from_file, stage, non_zero, output_path)
+            emb_matrix = random_walk(p_matrix, dim, iter, log, from_file, stage, non_zero, output_dir)
 
             # dimensionality reduction
             final_vec, feature_name, word_list = dimensionality_reduction(
@@ -181,11 +181,11 @@ def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
                 norm,
                 log,
                 saved_model,
-                output_path,
+                output_dir,
             )
 
             # writing the results into a file
-            emb_writer(final_vec, word_list, VEC_DIM, iter, feature_name, for_WSD, output_path)
+            emb_writer(final_vec, word_list, VEC_DIM, iter, feature_name, for_WSD, output_dir)
 
             finish_time = time.time()
             print("\nRequired time to process %d words: %.3f seconds ---" % (wrd_cnt, finish_time - start_time))
@@ -198,7 +198,7 @@ def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
         elif approach == 2:
             # random walk
             emb_matrix = matrix_arc_update(
-                p_matrix, synonym_index, accepted_rel, dim, depth, log, from_file, stage, output_path
+                p_matrix, synonym_index, accepted_rel, dim, depth, log, from_file, stage, output_dir
             )
 
             # dimensionality reduction
@@ -213,12 +213,12 @@ def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
                 norm,
                 log,
                 saved_model,
-                output_path,
+                output_dir,
             )
 
             # writing the results into a file
             f_name = "depth_" + str(depth)
-            emb_writer(final_vec, word_list, VEC_DIM, f_name, feature_name, for_WSD, output_path)
+            emb_writer(final_vec, word_list, VEC_DIM, f_name, feature_name, for_WSD, output_dir)
 
             finish_time = time.time()
             print("\nRequired time to process %d words: %.3f seconds ---" % (wrd_cnt, finish_time - start_time))
@@ -230,7 +230,22 @@ def main(LANG: str, TO_KEEP: str = "1000", VEC_DIM=850):
             log.close()
 
     # Checking the accuracy using Gensim
-    vector_accuracy(eval_sets, iter, approach, depth, for_WSD, embedding_file_name, output_path, LANG)
+    eval_set_paths = [os.path.join(os.getcwd(), f"data/input/{LANG}_testset/", ref) for ref in eval_sets]
+    if TEST_W2V:
+        emb_path = os.path.join(output_dir, "w2v_no_adj_embeddings.bin")
+    else:
+        emb_path = (
+            os.path.join(output_dir, f"embeddings_{iter}.txt")
+            if approach == 1
+            else os.path.join(output_dir, f"embeddings_depth_{depth}.txt")
+        )
+
+    vector_accuracy(
+        eval_set_paths=eval_set_paths,
+        emb_path=emb_path,
+        output_dir=output_dir,
+        lang=LANG,
+    )
 
 
 if __name__ == "__main__":
